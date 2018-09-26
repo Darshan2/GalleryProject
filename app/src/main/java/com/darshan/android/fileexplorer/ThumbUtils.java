@@ -123,7 +123,7 @@ import java.io.OutputStream;
         //Store/update that bitmap in MediaStore
         if (sourceBm != null) {
             Image image = storeThumbnail(imagePath, previousThumbPath, contentResolver, sourceBm, imageId,
-                    100F, 100F, MediaStore.Images.Thumbnails.MINI_KIND);
+                    400F, 400F, MediaStore.Images.Thumbnails.MINI_KIND);
             return image;
         } else {
             return null;
@@ -156,7 +156,8 @@ import java.io.OutputStream;
 
         matrix.setScale(scaleX, scaleY);
 
-        Bitmap thumb = Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+        Bitmap thumb = Bitmap.createBitmap(source,
+                0, 0, source.getWidth(), source.getHeight(), matrix, true);
 
         ContentValues values = new ContentValues(4);
         values.put(MediaStore.Images.Thumbnails.KIND,     kind);

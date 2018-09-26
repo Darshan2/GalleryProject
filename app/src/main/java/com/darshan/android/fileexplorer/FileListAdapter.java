@@ -2,6 +2,7 @@ package com.darshan.android.fileexplorer;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -72,11 +73,13 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
                 selectEnabled = true;
                 if(mSelectedImageSet.contains(image)) {
                     image.setSelected(false);
+                    holder.ivFileImage.clearColorFilter();
                     mSelectedImageSet.remove(image);
                     deHighlightView(holder.ivSelectedLogo);
                 } else {
                     image.setSelected(true);
                     mSelectedImageSet.add(image);
+                    holder.ivFileImage.setColorFilter(Color.argb(100, 0, 0, 0));
                     highlightView(holder.ivSelectedLogo);
                 }
             }
@@ -94,6 +97,7 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
     class ViewHolder extends RecyclerView.ViewHolder {
          ImageView ivFileImage;
          ImageView ivSelectedLogo, ivVideoIcon;
+         View vHighlight;
 
          ViewHolder(View itemView) {
             super(itemView);
@@ -101,6 +105,7 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
             ivFileImage = itemView.findViewById(R.id.fileImage_IV);
             ivSelectedLogo = itemView.findViewById(R.id.selectedIcon);
             ivVideoIcon = itemView.findViewById(R.id.videoIcon);
+//            vHighlight = itemView.findViewById(R.id.highlight_View);
         }
     }
 

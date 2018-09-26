@@ -51,14 +51,6 @@ public class SelectMediaActivity extends AppCompatActivity {
     }
 
 
-//    private void moveForward(String mediaType) {
-//        Intent intent = new Intent(this, GalleryActivity.class);
-//        intent.putExtra(GalleryConsts.INTENT_MEDIA_TYPE, mediaType);
-//        startActivityForResult(intent, GALLERY_ACTIVITY_REQUEST_CODE);
-//    }
-
-
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if(requestCode == GALLERY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {

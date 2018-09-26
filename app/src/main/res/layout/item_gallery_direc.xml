@@ -13,24 +13,25 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:adjustViewBounds="true"
-        android:scaleType="fitXY"
+        android:scaleType="centerCrop"
         android:id="@+id/folderThumb_IV"/>
 
     <RelativeLayout
+        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="#33000000">
+        android:background="#4D000000">
 
         <TextView
             android:layout_toLeftOf="@id/dirItems_TV"
             android:layout_width="wrap_content"
-            android:layout_height="15dp"
+            android:layout_height="20dp"
             android:fontFamily="sans-serif"
             android:textStyle="normal"
             android:textColor="#ffffff"
             tools:text="WhatsApp"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:layout_marginBottom="2dp"
             android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
@@ -41,12 +42,12 @@
 
         <TextView
             android:layout_width="wrap_content"
-            android:layout_height="15dp"
+            android:layout_height="20dp"
             android:fontFamily="sans-serif"
             android:textStyle="normal"
             android:textColor="#ffffff"
             tools:text="WhatsApp "
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:layout_marginBottom="2dp"
             android:layout_marginRight="8dp"
             android:layout_marginEnd="8dp"

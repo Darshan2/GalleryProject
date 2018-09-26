@@ -3,6 +3,8 @@ package com.darshan.android.fileexplorer;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -51,7 +53,7 @@ public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecLis
     }
 
     @Override
-    public void onBindViewHolder(@NonNull DirecListViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final DirecListViewHolder holder, final int position) {
         Image image = mDirecList.get(position);
 
         String filePath = image.getImageUri();
@@ -64,7 +66,6 @@ public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecLis
                     .load(image.getThumbUri())
                     .into(holder.ivFolderThumb);
 
-//            holder.ivFolderThumb.setImageBitmap(BitmapFactory.decodeFile(image.getThumbUri()));
         }
 
         holder.tvDirName.setText(dirName);
@@ -80,7 +81,6 @@ public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecLis
     @Override
     public int getItemCount() {
         return mDirecList.size();
-
     }
 
 
