@@ -55,7 +55,7 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
                         .into(holder.ivFileImage);
             } else {
                 Glide.with(mContext)
-                        .load(R.drawable.video_icon)
+                        .load(R.drawable.blank_video_screen)
                         .into(holder.ivFileImage);
             }
 

@@ -62,10 +62,17 @@ public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecLis
         String subDirPath = filePath.substring(0, filePath.lastIndexOf("/"));
         final String dirName = new File(subDirPath).getName();
 
-        if(image.getThumbUri() != null) {
-            Glide.with(mContext)
-                    .load(image.getThumbUri())
-                    .into(holder.ivFolderThumb);
+        String thumbUri = image.getThumbUri();
+        if(thumbUri != null ) {
+            if(!thumbUri.equals(mContext.getResources().getString(R.string.No_first_frame_video_thumb))) {
+                Glide.with(mContext)
+                        .load(image.getThumbUri())
+                        .into(holder.ivFolderThumb);
+            } else {
+                Glide.with(mContext)
+                        .load(R.drawable.blank_video_screen)
+                        .into(holder.ivFolderThumb);
+            }
 
         }
 
@@ -124,6 +131,19 @@ public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecLis
 
     private int getNumImages(String folderName) {
         Cursor cursor  = ((GalleryActivity)mContext).getFolderCursor(folderName,GalleryConsts.IMAGE_TYPE);
+        return getNumItems(cursor);
+    }
+
+    private int getNumVideos(String folderName) {
+        Cursor cursor  = ((GalleryActivity)mContext).getFolderCursor(folderName,GalleryConsts.VIDEO_TYPE);
+        return getNumItems(cursor);
+    }
+
+    /**
+     * @param cursor cursor pointing to particular folder
+     * @return count of valid files(i.e readable file(file size > 0)) in folder pointed by a cursor
+     */
+    private int getNumItems(Cursor cursor) {
         if(cursor != null) {
             int itemCount = 0;
             //Check to see if the file exist(i.e has size more than 0kb)
@@ -138,14 +158,6 @@ public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecLis
                 }
             }
             return itemCount;
-        }
-        return 0;
-    }
-
-    private int getNumVideos(String folderName) {
-        Cursor cursor  = ((GalleryActivity)mContext).getFolderCursor(folderName,GalleryConsts.VIDEO_TYPE);
-        if(cursor != null) {
-            return cursor.getCount();
         }
         return 0;
     }
