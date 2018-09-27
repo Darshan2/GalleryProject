@@ -42,8 +42,6 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
     //MIME type of wanted files
     private String mRequiredMediaType;
     private boolean isFolderList;
-    private int mNumFiles = 0;
-
 
     //widgets
     private RecyclerView mImageGridRecyclerView;
@@ -158,7 +156,7 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
     private int getOnlyImageFiles(String folderName) {
         Cursor cursor = getFolderCursor(folderName, GalleryConsts.IMAGE_TYPE);
         int itemCount = cursor.getCount();
-        mNumFiles = itemCount;
+//        mNumFiles = itemCount;
         getAllFilesInFolder(cursor, GalleryConsts.IMAGE_TYPE);
         return itemCount;
     }
@@ -166,13 +164,14 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
     private int getOnlyVideoFiles(String folderName) {
         Cursor cursor = getFolderCursor(folderName, GalleryConsts.VIDEO_TYPE);
         int itemCount = cursor.getCount();
-        mNumFiles = itemCount;
+//        mNumFiles = itemCount;
         getAllFilesInFolder(cursor, GalleryConsts.VIDEO_TYPE);
         return itemCount;
     }
 
     private void getBothImagesVideosFiles(String folderName) {
-        mNumFiles = getOnlyImageFiles(folderName) + getOnlyVideoFiles(folderName);
+        getOnlyImageFiles(folderName);
+        getOnlyVideoFiles(folderName);
     }
 
 
@@ -290,7 +289,7 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
                 int imageIdColumnIndex = folderCursor.getColumnIndex(MediaStore.Images.Media._ID);
                 long imageId = folderCursor.getLong(imageIdColumnIndex);
 
-//                Log.d(TAG, "getAllFilesInFolder: " + filePath + imageId);
+                Log.d(TAG, "getAllFilesInFolder: " + filePath + imageId);
                 LoadThumbAsyncTask asyncTask = new LoadThumbAsyncTask(mediaType);
                 mAsyncTaskLists.add(asyncTask);
                 asyncTask.execute(filePath, String.valueOf(imageId));
@@ -375,7 +374,7 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
         mFoldersToolbar.setVisibility(View.GONE);
 
         TextView itemCountTV = findViewById(R.id.itemCount_TV);
-        String countText = itemCount + getString(R.string.items);
+        String countText = itemCount + " " + getString(R.string.items_selected);
         itemCountTV.setText(countText);
 
         ImageView backArrow = findViewById(R.id.backArrow);
@@ -401,9 +400,7 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
             }
         });
 
-//        mGalleryActionBar.setTitle(itemCount + " items");
-//        mGalleryActionBar.setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(this, R.color.lokal_color)));
-    }
+  }
 
     public void showFolderSelectBar() {
         mFileSelectToolbar.setVisibility(View.GONE);
@@ -417,15 +414,8 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
             }
         });
 
-
-//        mGalleryActionBar.setTitle("Select items");
-//        mGalleryActionBar.setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(this, R.color.white)));
-
     }
 
-    public int getNumFiles() {
-        return mNumFiles;
-    }
 
     private void refreshGridImageList() {
         showFolderSelectBar();

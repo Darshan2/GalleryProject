@@ -123,7 +123,7 @@ import java.io.OutputStream;
         //Store/update that bitmap in MediaStore
         if (sourceBm != null) {
             Image image = storeThumbnail(imagePath, previousThumbPath, contentResolver, sourceBm, imageId,
-                    400F, 400F, MediaStore.Images.Thumbnails.MINI_KIND);
+                    600F, 600F, MediaStore.Images.Thumbnails.MINI_KIND);
             return image;
         } else {
             return null;
@@ -135,7 +135,8 @@ import java.io.OutputStream;
       * if the row with image_id = image_source_id(Source Image id from Image table) already
       * exist in media store(provider) db update that row, else create new entry */
     private Image storeThumbnail(String imagePath, @Nullable String previousThumbPath, ContentResolver cr,
-                                Bitmap source, long id, float width, float height, int kind) {
+                                Bitmap sourceBm, long id, float width, float height, int kind) {
+        Log.d(TAG, "storeThumbnail: ");
         Image image = new Image(imagePath, previousThumbPath);
 
         Uri mediaURi = null;
@@ -148,22 +149,25 @@ import java.io.OutputStream;
             mediaIdColumnName = MediaStore.Video.Thumbnails.VIDEO_ID;
         }
 
-        // create the matrix to scale it
+        //create the matrix to scale it
         Matrix matrix = new Matrix();
 
-        float scaleX = width / source.getWidth();
-        float scaleY = height / source.getHeight();
+        float scaleX = width / sourceBm.getWidth();
+        float scaleY = height / sourceBm.getHeight();
 
         matrix.setScale(scaleX, scaleY);
 
-        Bitmap thumb = Bitmap.createBitmap(source,
-                0, 0, source.getWidth(), source.getHeight(), matrix, true);
+        //Scale the bit map if it is of image type else pass the same old bm
+        Bitmap thumb = sourceBm;
+//        if(mMediaType.equals(GalleryConsts.IMAGE_TYPE)) {
+//            thumb = Bitmap.createBitmap(sourceBm, 0, 0, sourceBm.getWidth(), sourceBm.getHeight(), matrix, true);
+//        }
 
         ContentValues values = new ContentValues(4);
-        values.put(MediaStore.Images.Thumbnails.KIND,     kind);
-        values.put(mediaIdColumnName, (int)id);
-        values.put(MediaStore.Images.Thumbnails.HEIGHT,   thumb.getHeight());
-        values.put(MediaStore.Images.Thumbnails.WIDTH,    thumb.getWidth());
+        values.put(MediaStore.Images.Thumbnails.KIND, kind);
+        values.put(mediaIdColumnName, (int) id);
+        values.put(MediaStore.Images.Thumbnails.HEIGHT, thumb.getHeight());
+        values.put(MediaStore.Images.Thumbnails.WIDTH, thumb.getWidth());
 
         File thumbFile;
         if(mediaURi != null)
@@ -175,7 +179,7 @@ import java.io.OutputStream;
 
             try {
                 OutputStream thumbOut = cr.openOutputStream(thumbUri);
-                thumb.compress(Bitmap.CompressFormat.JPEG, 100, thumbOut);
+                sourceBm.compress(Bitmap.CompressFormat.JPEG, 100, thumbOut);
                 if (thumbOut != null) {
                     thumbOut.close();
                 }
@@ -193,7 +197,7 @@ import java.io.OutputStream;
         } else {
             //i.e previously row exist in thumb table with given sourceId(Image _id from Image table),
             //update that row. and return same old image object
-            int result = cr.update(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI,
+            int result = cr.update(mediaURi,
                     values,
                     mediaIdColumnName + "=" + id,
                     null);
@@ -205,7 +209,7 @@ import java.io.OutputStream;
             try {
                 OutputStream thumbOut = new FileOutputStream(thumbFile);
 
-                thumb.compress(Bitmap.CompressFormat.JPEG, 100, thumbOut);
+                sourceBm.compress(Bitmap.CompressFormat.JPEG, 100, thumbOut);
                 thumbOut.close();
             }
             catch (FileNotFoundException ex) {
@@ -220,7 +224,6 @@ import java.io.OutputStream;
     }
 
     private Image getNewThumbFromDb(ContentResolver contentResolver, String imagePath, long imageId) {
-
         Cursor cursor2 = queryDbForThumbnail(contentResolver, imageId);
 
         if (cursor2 != null && cursor2.moveToFirst()) {

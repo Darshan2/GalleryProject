@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -124,7 +125,19 @@ public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecLis
     private int getNumImages(String folderName) {
         Cursor cursor  = ((GalleryActivity)mContext).getFolderCursor(folderName,GalleryConsts.IMAGE_TYPE);
         if(cursor != null) {
-            return cursor.getCount();
+            int itemCount = 0;
+            //Check to see if the file exist(i.e has size more than 0kb)
+            for(int i = 0; i < cursor.getCount(); i++) {
+                cursor.moveToPosition(i);
+                int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+                String filePath = cursor.getString(dataColumnIndex);
+
+                File file = new File(filePath);
+                if (file.length() > 0) {
+                    itemCount ++;
+                }
+            }
+            return itemCount;
         }
         return 0;
     }
