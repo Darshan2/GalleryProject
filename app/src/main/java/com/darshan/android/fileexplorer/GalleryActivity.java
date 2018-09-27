@@ -90,7 +90,7 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
         mLoadProgressBar.setVisibility(View.VISIBLE);
 
         mLastSubDirSet = new HashSet<>();
-        mThumbUtils = new ThumbUtils();
+        mThumbUtils = new ThumbUtils(this);
         mAsyncTaskLists = new ArrayList<>();
 
         //get intent extra

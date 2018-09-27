@@ -2,6 +2,7 @@ package com.darshan.android.fileexplorer;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -24,8 +25,11 @@ import java.io.OutputStream;
     private static final String TAG = "ThumbUtils";
 
     private String mMediaType;
+    private Context mContext;
 
-
+    public ThumbUtils(Context mContext) {
+        this.mContext = mContext;
+    }
 
     public Image getMediaThumbnail(String mediaType, ContentResolver contentResolver, long sourceId, String filePath) {
         this.mMediaType = mediaType;
@@ -117,6 +121,12 @@ import java.io.OutputStream;
         } else if (mMediaType.equals(GalleryConsts.VIDEO_TYPE)) {
             //Create a bitmap for videos first frame.
             sourceBm = ThumbnailUtils.createVideoThumbnail(imagePath, MediaStore.Video.Thumbnails.MINI_KIND);
+            //If first frame thumbnail can not be created. Check if the video file is of size >0Kb,
+            //if it is send back image object with thumb uri as "no first frame data".
+            if(new File(imagePath).length() > 0) {
+                return new Image(imagePath, mContext.getResources().getString(R.string.No_first_frame_video_thumb));
+            }
+
         }
 
         Log.d(TAG, "createImageThumbNail: bm " + sourceBm);

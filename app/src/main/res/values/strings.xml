@@ -18,4 +18,5 @@
     <string name="folder_toolbar_title">వీడియో లేదా ఫోటో ఎంచుకోండి</string>
     <string name="Select">తరువాత </string>
     <string name="items_selected">ఫోటోలు ఎంపిక చేయబడినవి</string>
+    <string name="No_first_frame_video_thumb">No first frame thumb available</string>
 </resources>

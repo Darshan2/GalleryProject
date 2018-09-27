@@ -47,13 +47,19 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
     public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
         final Image image = mImageFilesList.get(position);
 
-        if(image.getThumbUri() != null) {
-            Glide.with(mContext)
-                    .load(image.getThumbUri())
-                    .into(holder.ivFileImage);
+        String thumbUri = image.getThumbUri();
+        if(thumbUri != null ) {
+            if(!thumbUri.equals(mContext.getResources().getString(R.string.No_first_frame_video_thumb))) {
+                Glide.with(mContext)
+                        .load(image.getThumbUri())
+                        .into(holder.ivFileImage);
+            } else {
+                Glide.with(mContext)
+                        .load(R.drawable.video_icon)
+                        .into(holder.ivFileImage);
+            }
 
         }
-//        holder.ivFileImage.setImageBitmap(BitmapFactory.decodeFile(image.getThumbUri()));
 
         if(!image.isSelected()) {
             holder.ivSelectedLogo.setVisibility(View.GONE);
