@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -49,15 +50,22 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
 
         String thumbUri = image.getThumbUri();
         if(thumbUri != null ) {
-            if(!thumbUri.equals(mContext.getResources().getString(R.string.No_first_frame_video_thumb))) {
-                Glide.with(mContext)
-                        .load(image.getThumbUri())
-                        .into(holder.ivFileImage);
-            } else {
-                Glide.with(mContext)
-                        .load(R.drawable.blank_video_screen)
-                        .into(holder.ivFileImage);
-            }
+            RequestOptions placeHolderOption = new RequestOptions().placeholder(R.drawable.blank_video_screen);
+            Glide.with(mContext)
+                    .load(image.getThumbUri())
+                    .apply(placeHolderOption)
+                    .into(holder.ivFileImage);
+
+
+//            if(!thumbUri.equals(mContext.getResources().getString(R.string.No_first_frame_video_thumb))) {
+//                Glide.with(mContext)
+//                        .load(image.getThumbUri())
+//                        .into(holder.ivFileImage);
+//            } else {
+//                Glide.with(mContext)
+//                        .load(R.drawable.blank_video_screen)
+//                        .into(holder.ivFileImage);
+//            }
 
         }
 

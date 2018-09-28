@@ -16,6 +16,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -64,16 +65,11 @@ public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecLis
 
         String thumbUri = image.getThumbUri();
         if(thumbUri != null ) {
-            if(!thumbUri.equals(mContext.getResources().getString(R.string.No_first_frame_video_thumb))) {
-                Glide.with(mContext)
+            RequestOptions placeHolderOption = new RequestOptions().placeholder(R.drawable.blank_video_screen);
+            Glide.with(mContext)
                         .load(image.getThumbUri())
+                        .apply(placeHolderOption)
                         .into(holder.ivFolderThumb);
-            } else {
-                Glide.with(mContext)
-                        .load(R.drawable.blank_video_screen)
-                        .into(holder.ivFolderThumb);
-            }
-
         }
 
         holder.tvDirName.setText(dirName);
