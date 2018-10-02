@@ -22,7 +22,7 @@ import java.io.OutputStream;
  * Created by Darshan B.S on 19-09-2018.
  */
  public class ThumbUtils {
-    private static final String TAG = "ThumbUtils";
+    private static final String TAG = "ThumbUtils ";
 
     private String mMediaType;
     private Context mContext;
