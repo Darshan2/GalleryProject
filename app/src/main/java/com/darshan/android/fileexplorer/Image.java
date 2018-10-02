@@ -13,6 +13,7 @@ public class Image implements Parcelable {
     private String thumbUri;
     private boolean selected;
     private boolean video;
+    private String title = "";
 
     public Image() {
     }
@@ -20,6 +21,10 @@ public class Image implements Parcelable {
     public Image(String imageUri, String thumbUri) {
         this.imageUri = imageUri;
         this.thumbUri = thumbUri;
+    }
+
+    public Image(String title) {
+        this.title = title;
     }
 
     protected Image(Parcel in) {
@@ -86,11 +91,16 @@ public class Image implements Parcelable {
         this.video = video;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     @Override
     public String toString() {
         return "Image{" +
                 "imageUri='" + imageUri + '\'' +
                 ", thumbUri='" + thumbUri + '\'' +
+                ", title='" + title + '\'' +
                 '}';
     }
 }

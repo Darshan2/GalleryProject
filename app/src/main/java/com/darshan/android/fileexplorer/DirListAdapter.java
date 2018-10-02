@@ -25,7 +25,6 @@ import java.util.ArrayList;
 /**
  * Created by Darshan B.S on 15-09-2018.
  */
-
 public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecListViewHolder> {
     private static final String TAG = "DirListAdapter";
     private Context mContext;
@@ -33,12 +32,12 @@ public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecLis
     private DirClickListener mDirClickListener;
     private String mRequiredMediaType;
 
+
     public DirListAdapter(Context mContext, ArrayList<Image> subDirList, DirClickListener mDirClickListener, String mRequiredMediaType) {
         this.mContext = mContext;
         this.mDirClickListener = mDirClickListener;
         this.mDirecList = subDirList;
         this.mRequiredMediaType = mRequiredMediaType;
-
     }
 
     interface DirClickListener {
@@ -56,35 +55,60 @@ public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecLis
 
     @Override
     public void onBindViewHolder(@NonNull final DirecListViewHolder holder, final int position) {
-        Image image = mDirecList.get(position);
+        if(position > 0) {
+            Image image = mDirecList.get(position - 1);
 
-        String filePath = image.getImageUri();
+            String filePath = image.getImageUri();
 
-        String subDirPath = filePath.substring(0, filePath.lastIndexOf("/"));
-        final String dirName = new File(subDirPath).getName();
+            String subDirPath = filePath.substring(0, filePath.lastIndexOf("/"));
+            final String dirName = new File(subDirPath).getName();
 
-        String thumbUri = image.getThumbUri();
-        if(thumbUri != null ) {
-            RequestOptions placeHolderOption = new RequestOptions().placeholder(R.drawable.blank_video_screen);
-            Glide.with(mContext)
-                        .load(image.getThumbUri())
+            String thumbUri = image.getThumbUri();
+            if (thumbUri != null) {
+                RequestOptions placeHolderOption = new RequestOptions().placeholder(R.drawable.blank_video_screen);
+                Glide.with(mContext)
+                        .load(thumbUri)
                         .apply(placeHolderOption)
                         .into(holder.ivFolderThumb);
-        }
-
-        holder.tvDirName.setText(dirName);
-        holder.tvDirItems.setText(getFolderItemCount(dirName));
-        holder.rvFolder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mDirClickListener.onDirClick(dirName);
             }
-        });
+
+            holder.tvDirName.setText(dirName);
+            holder.tvDirItems.setText(getFolderItemCount(dirName));
+            holder.rvFolder.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mDirClickListener.onDirClick(dirName);
+                }
+            });
+
+        } else if(position == 0){
+            final String dirName = mContext.getResources().getText(R.string.all_media_files).toString();
+            holder.tvDirName.setText(dirName);
+
+            GalleryLoader galleryLoader = GalleryLoader.getInstance();
+            if(galleryLoader.isFinishedLoading()) {
+
+                holder.tvDirItems.setText(String.valueOf(galleryLoader.getTotalItemCount()));
+                Image firstImage = galleryLoader.getFirstImageInTimeStamp(mContext);
+                RequestOptions placeHolderOption = new RequestOptions().placeholder(R.drawable.blank_video_screen);
+                    Glide.with(mContext)
+                            .load(firstImage.getThumbUri())
+                            .apply(placeHolderOption)
+                            .into(holder.ivFolderThumb);
+            }
+            holder.rvFolder.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mDirClickListener.onDirClick(dirName);
+                }
+            });
+        }
     }
 
     @Override
     public int getItemCount() {
-        return mDirecList.size();
+        //+ 1 because we are including additional ALlMediaFolder
+        return mDirecList.size() + 1;
     }
 
 
@@ -153,10 +177,12 @@ public class DirListAdapter extends RecyclerView.Adapter<DirListAdapter.DirecLis
                     itemCount ++;
                 }
             }
+//            mTotalItemsInAllFolder += itemCount;
             return itemCount;
         }
         return 0;
     }
+
 
 
 }

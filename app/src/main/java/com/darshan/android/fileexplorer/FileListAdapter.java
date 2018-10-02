@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,12 +29,13 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
     private HashSet<Image> mSelectedImageSet;
     private boolean selectEnabled = false;
 
-
     public FileListAdapter(Context mContext, ArrayList<Image> mImageFilesList) {
         this.mContext = mContext;
         this.mImageFilesList = mImageFilesList;
+
         mSelectedImageSet = new HashSet<>();
     }
+
 
     @NonNull
     @Override
@@ -55,24 +57,12 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
                     .load(image.getThumbUri())
                     .apply(placeHolderOption)
                     .into(holder.ivFileImage);
-
-
-//            if(!thumbUri.equals(mContext.getResources().getString(R.string.No_first_frame_video_thumb))) {
-//                Glide.with(mContext)
-//                        .load(image.getThumbUri())
-//                        .into(holder.ivFileImage);
-//            } else {
-//                Glide.with(mContext)
-//                        .load(R.drawable.blank_video_screen)
-//                        .into(holder.ivFileImage);
-//            }
-
         }
 
         if(!image.isSelected()) {
-            holder.ivSelectedLogo.setVisibility(View.GONE);
+            hideSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
         } else {
-            holder.ivSelectedLogo.setVisibility(View.VISIBLE);
+            showSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
         }
 
         if(image.isVideo()) {
@@ -89,23 +79,27 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
                     image.setSelected(false);
                     holder.ivFileImage.clearColorFilter();
                     mSelectedImageSet.remove(image);
-                    deHighlightView(holder.ivSelectedLogo);
+                    hideSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
                 } else {
                     image.setSelected(true);
                     mSelectedImageSet.add(image);
-                    holder.ivFileImage.setColorFilter(Color.argb(100, 0, 0, 0));
-                    highlightView(holder.ivSelectedLogo);
+                    showSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
+//                    holder.ivFileImage.setColorFilter(Color.argb(100, 0, 0, 0));
+//                    highlightView(holder.ivSelectedLogo);
                 }
             }
 
         });
+
 
     }
 
 
     @Override
     public int getItemCount() {
-        return mImageFilesList.size();
+        int size = mImageFilesList.size();
+//        Log.d(TAG, "getItemCount: " + size);
+        return size;
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -121,19 +115,21 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
         }
     }
 
-    private void highlightView(ImageView imageView) {
-        ((GalleryActivity)mContext).showFileSelectBar(mSelectedImageSet.size());
 
-        imageView.setVisibility(View.VISIBLE);
+    private void showSelectedMark(ImageView selectLogo, ImageView filterImageView) {
+        ((GalleryActivity) mContext).showFileSelectBar(mSelectedImageSet.size());
+        selectLogo.setVisibility(View.VISIBLE);
+        filterImageView.setColorFilter(Color.argb(100, 0, 0, 0));
     }
 
-    private void deHighlightView(ImageView imageView) {
+    private void hideSelectedMark(ImageView selectLogo, ImageView filterImageView) {
         if(mSelectedImageSet.size() == 0) {
             ((GalleryActivity)mContext).showFolderSelectBar();
         } else {
             ((GalleryActivity) mContext).showFileSelectBar(mSelectedImageSet.size());
         }
-        imageView.setVisibility(View.GONE);
+        selectLogo.setVisibility(View.GONE);
+        filterImageView.clearColorFilter();
     }
 
     public HashSet<Image> getSelectedItems() {
@@ -147,4 +143,6 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
         }
         mSelectedImageSet.clear();
     }
+
+
 }

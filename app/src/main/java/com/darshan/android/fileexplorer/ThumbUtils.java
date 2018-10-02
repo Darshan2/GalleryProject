@@ -86,7 +86,6 @@ import java.io.OutputStream;
             File file = new File(imageThumbPath);
             //Check if the thumb file pointed by imageThumbPath exist in device(user may have deleted them)
             if (file.exists()) {
-//                Log.d(TAG, "getThumbnail: file exists");
                 image = new Image(filePath, imageThumbPath);
             } else {
                 Log.d(TAG, "getThumbnail: entry exist, file not " + imageThumbPath);
@@ -123,8 +122,10 @@ import java.io.OutputStream;
             sourceBm = ThumbnailUtils.createVideoThumbnail(imagePath, MediaStore.Video.Thumbnails.MINI_KIND);
             //If first frame thumbnail can not be created. Check if the video file is of size >0Kb,
             //if it is send back image object with thumb uri as "no first frame data".
-            if(new File(imagePath).length() > 0) {
-                return new Image(imagePath, mContext.getResources().getString(R.string.No_first_frame_video_thumb));
+            if(sourceBm == null) {
+                if (new File(imagePath).length() > 0) {
+                    return new Image(imagePath, mContext.getResources().getString(R.string.No_first_frame_video_thumb));
+                }
             }
 
         }
