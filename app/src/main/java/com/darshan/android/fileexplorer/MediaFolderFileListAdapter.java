@@ -78,6 +78,20 @@ public class MediaFolderFileListAdapter extends RecyclerView.Adapter<MediaFolder
             if(!image.isSelected()) {
                 hideSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
             } else {
+                boolean exists = false;
+                if(mSelectedImageSet != null) {
+                    for(Image selectedImage : mSelectedImageSet) {
+                        if(image.getImageUri().equals(selectedImage.getImageUri())) {
+                            //i.e selected item already exist in set
+                            exists = true;
+                            break;
+                        }
+                    }
+                }
+
+                if(!exists) {
+                    mSelectedImageSet.add(image);
+                }
                 showSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
             }
 
@@ -87,15 +101,26 @@ public class MediaFolderFileListAdapter extends RecyclerView.Adapter<MediaFolder
                 holder.ivVideoIcon.setVisibility(View.GONE);
             }
 
+
             holder.ivFileImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(mSelectedImageSet.contains(image)) {
-                        image.setSelected(false);
-                        holder.ivFileImage.clearColorFilter();
-                        mSelectedImageSet.remove(image);
-                        hideSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
-                    } else {
+//                selectEnabled = true;
+                    boolean exists = false;
+                    if(mSelectedImageSet != null) {
+                        for (Image img : mSelectedImageSet) {
+                            //Check existing selected set for the image's imageUri(do not use mSelectedImageSet.contains(image))
+                            if (image.getImageUri().equals(img.getImageUri())) {
+                                exists = true;
+                                image.setSelected(false);
+                                mSelectedImageSet.remove(img);
+                                hideSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
+                                break;
+                            }
+                        }
+                    }
+
+                    if(!exists) {
                         image.setSelected(true);
                         mSelectedImageSet.add(image);
                         showSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
@@ -103,6 +128,23 @@ public class MediaFolderFileListAdapter extends RecyclerView.Adapter<MediaFolder
                 }
 
             });
+
+//            holder.ivFileImage.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    if(mSelectedImageSet.contains(image)) {
+//                        image.setSelected(false);
+//                        holder.ivFileImage.clearColorFilter();
+//                        mSelectedImageSet.remove(image);
+//                        hideSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
+//                    } else {
+//                        image.setSelected(true);
+//                        mSelectedImageSet.add(image);
+//                        showSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
+//                    }
+//                }
+//
+//            });
         }
     }
 
@@ -156,6 +198,12 @@ public class MediaFolderFileListAdapter extends RecyclerView.Adapter<MediaFolder
             image.setSelected(false);
         }
         mSelectedImageSet.clear();
+    }
+
+    public void setPreviousSelectedList(ArrayList<Image> previousSelectedList) {
+        mSelectedImageSet.addAll(previousSelectedList);
+        ((GalleryActivity) mContext).showFileSelectBar(mSelectedImageSet.size());
+
     }
 }
 

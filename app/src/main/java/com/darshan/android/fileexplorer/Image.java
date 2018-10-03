@@ -100,6 +100,8 @@ public class Image implements Parcelable {
         return "Image{" +
                 "imageUri='" + imageUri + '\'' +
                 ", thumbUri='" + thumbUri + '\'' +
+                ", selected=" + selected +
+                ", video=" + video +
                 ", title='" + title + '\'' +
                 '}';
     }

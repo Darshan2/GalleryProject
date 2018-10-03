@@ -12,8 +12,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -21,8 +19,9 @@ import java.util.ArrayList;
 public class SelectMediaActivity extends AppCompatActivity {
     private static final String TAG = "SelectMediaActivity";
     private static final int REQUEST_STORAGE_PERMISSION = 20120 ;
-    private RelativeLayout mMediaRL;
     private static final int GALLERY_ACTIVITY_REQUEST_CODE = 13025;
+
+    private GalleryLoader mGalleryLoader;
 
 
 
@@ -30,6 +29,8 @@ public class SelectMediaActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_media);
+
+        mGalleryLoader = GalleryLoader.getInstance();
 
         final EditText mediaTypeET = findViewById(R.id.mediaType_ET);
         Button submitBtn = findViewById(R.id.submitBtn);
@@ -56,6 +57,8 @@ public class SelectMediaActivity extends AppCompatActivity {
     private void loadFoldersOfMedia(String mediaType) {
         Intent intent = new Intent(this, GalleryActivity.class);
         intent.putExtra(GalleryConsts.INTENT_MEDIA_TYPE, mediaType);
+        intent.putExtra(GalleryConsts.INTENT_PREVIOUSLY_SELECT_ITEMS, mGalleryLoader.getPreviousSelectedImages());
+        intent.putExtra(GalleryConsts.INTENT_PREVIOUSLY_SELECT_ITEMS_FOLDER, mGalleryLoader.getPreviousSelectedItemsFolderName());
         startActivityForResult(intent, GALLERY_ACTIVITY_REQUEST_CODE);
     }
 
@@ -64,9 +67,12 @@ public class SelectMediaActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if(requestCode == GALLERY_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
             ArrayList<Image> selectedImages = intent.getParcelableArrayListExtra(GalleryConsts.INTENT_SELECT_GALLERY_ITEMS);
+            String selectedItemsDirName = intent.getStringExtra(GalleryConsts.INTENT_PREVIOUSLY_SELECT_ITEMS_FOLDER);
             for(Image image : selectedImages) {
                 Log.d(TAG, "onActivityResult: " + image);
             }
+            mGalleryLoader.setPreviousSelectedImages(selectedImages);
+            mGalleryLoader.setPreviousSelectedItemsFolderName(selectedItemsDirName);
         }
     }
 

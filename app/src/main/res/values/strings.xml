@@ -20,8 +20,8 @@
     <string name="items_selected">ఫోటోలు ఎంపిక చేయబడినవి</string>
     <string name="No_first_frame_video_thumb">No first frame thumb available</string>
     <string name="all_media_files">All media files</string>
-    <string name="today">Today</string>
-    <string name="yesterday">Yesterday</string>
-    <string name="last_week">Last week</string>
-    <string name="older_than_week">Older than week</string>
+    <string name="today">TODAY</string>
+    <string name="yesterday">YESTERDAY</string>
+    <string name="last_week">LAST WEEK</string>
+    <string name="older_than_week">OLDER</string>
 </resources>

@@ -27,7 +27,7 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
     private Context mContext;
     private ArrayList<Image> mImageFilesList;
     private HashSet<Image> mSelectedImageSet;
-    private boolean selectEnabled = false;
+    private boolean isPreviousSelectedListExist = false;
 
     public FileListAdapter(Context mContext, ArrayList<Image> mImageFilesList) {
         this.mContext = mContext;
@@ -62,6 +62,21 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
         if(!image.isSelected()) {
             hideSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
         } else {
+            //For previously selected items
+            boolean exists = false;
+            if(mSelectedImageSet != null) {
+                for(Image selectedImage : mSelectedImageSet) {
+                    if(image.getImageUri().equals(selectedImage.getImageUri())) {
+                        //i.e selected item already exist in set
+                        exists = true;
+                        break;
+                    }
+                }
+            }
+
+            if(!exists) {
+                mSelectedImageSet.add(image);
+            }
             showSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
         }
 
@@ -74,22 +89,40 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
         holder.ivFileImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                selectEnabled = true;
-                if(mSelectedImageSet.contains(image)) {
-                    image.setSelected(false);
-                    holder.ivFileImage.clearColorFilter();
-                    mSelectedImageSet.remove(image);
-                    hideSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
-                } else {
+//                selectEnabled = true;
+                boolean exists = false;
+                if(mSelectedImageSet != null) {
+                    for (Image img : mSelectedImageSet) {
+                        //Check existing selected set for the image's imageUri(do not use mSelectedImageSet.contains(image))
+                        if (image.getImageUri().equals(img.getImageUri())) {
+                            exists = true;
+                            image.setSelected(false);
+                            mSelectedImageSet.remove(img);
+                            hideSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
+                            break;
+                        }
+                    }
+                }
+
+                if(!exists) {
                     image.setSelected(true);
                     mSelectedImageSet.add(image);
                     showSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
-//                    holder.ivFileImage.setColorFilter(Color.argb(100, 0, 0, 0));
-//                    highlightView(holder.ivSelectedLogo);
                 }
             }
 
         });
+
+//        if(mSelectedImageSet.contains(image)) {
+//                    image.setSelected(false);
+//                    holder.ivFileImage.clearColorFilter();
+//                    mSelectedImageSet.remove(image);
+//                    hideSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
+//                } else {
+//                    image.setSelected(true);
+//                    mSelectedImageSet.add(image);
+//                    showSelectedMark(holder.ivSelectedLogo, holder.ivFileImage);
+//                }
 
 
     }
@@ -124,7 +157,9 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
 
     private void hideSelectedMark(ImageView selectLogo, ImageView filterImageView) {
         if(mSelectedImageSet.size() == 0) {
-            ((GalleryActivity)mContext).showFolderSelectBar();
+//            if(!isPreviousSelectedListExist) {
+                ((GalleryActivity) mContext).showFolderSelectBar();
+//            }
         } else {
             ((GalleryActivity) mContext).showFileSelectBar(mSelectedImageSet.size());
         }
@@ -137,11 +172,19 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ViewHo
     }
 
     public void clearSelectedList() {
-        selectEnabled = false;
+//        selectEnabled = false;
         for(Image image : mImageFilesList) {
             image.setSelected(false);
         }
         mSelectedImageSet.clear();
+        isPreviousSelectedListExist = false;
+    }
+
+    public void setPreviousSelectedList(ArrayList<Image> previousSelectedList) {
+        mSelectedImageSet.addAll(previousSelectedList);
+//        isPreviousSelectedListExist = true;
+        ((GalleryActivity) mContext).showFileSelectBar(previousSelectedList.size());
+
     }
 
 

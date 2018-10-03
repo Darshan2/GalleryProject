@@ -12,7 +12,9 @@ public final class GalleryLoader {
     private static final GalleryLoader ourInstance = new GalleryLoader();
 
     private HashMap<String, ArrayList<Image>> mTimeFilesMap;
+    private ArrayList<Image> mPreviousSelectedImages;
     private boolean finishedLoading = false;
+    private String mPreviousSelectedItemFolderName = "";
 
     private boolean isTodaysFilesExist = false;
     private boolean isYesterdaysFilesExist = false;
@@ -116,5 +118,25 @@ public final class GalleryLoader {
            total += mTimeFilesMap.get(str).size();
         }
         return total;
+    }
+
+    public ArrayList<Image> getPreviousSelectedImages() {
+        return mPreviousSelectedImages;
+    }
+
+    public void setPreviousSelectedImages(ArrayList<Image> mPreviousSelectedImages) {
+        this.mPreviousSelectedImages = mPreviousSelectedImages;
+    }
+
+    public String getPreviousSelectedItemsFolderName() {
+        return mPreviousSelectedItemFolderName;
+    }
+
+    public void setPreviousSelectedItemsFolderName(String mPreviousSelectedItemFolderName) {
+        this.mPreviousSelectedItemFolderName = mPreviousSelectedItemFolderName;
+    }
+
+    public void clearPreviouslySelectedList(){
+        mPreviousSelectedImages = null;
     }
 }

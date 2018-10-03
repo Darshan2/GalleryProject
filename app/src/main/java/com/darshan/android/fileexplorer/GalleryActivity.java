@@ -39,10 +39,14 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
     private HashSet<String> mLastSubDirSet;
     private HashMap<String, ArrayList<Image>> mAllMediaFolderFileMap;
     private ThumbUtils mThumbUtils;
+    private HashSet<String> mPreviouslySelectedImagesSet;
+    private ArrayList<Image> mPreviouslySelectedImagesList;
+    private String mCurrentDirName = "";
+
     //MIME type of wanted files
     private String mRequiredMediaType;
-    private boolean isFolderList;
     private boolean isAllMediaFolderClicked = false;
+    private boolean isPreviousSelectedListExists = false;
 
     //widgets
     private RecyclerView mImageGridRecyclerView;
@@ -60,9 +64,10 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
     @Override
     public void onDirClick(String dirName) {
         Log.d(TAG, "onDirClick: " + dirName);
+        mCurrentDirName = dirName;
         //hide SubDirectory list
         mDirNameRecyclerView.setVisibility(View.GONE);
-        isFolderList = false;
+//        isFolderList = false;
         if(dirName.equals(getString(R.string.all_media_files))) {
             isAllMediaFolderClicked = true;
             mImageGridRecyclerView.setVisibility(View.GONE);
@@ -105,10 +110,12 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
 
         mLoadProgressBar.setVisibility(View.VISIBLE);
 
+        mPreviouslySelectedImagesSet = new HashSet<>();
         mLastSubDirSet = new HashSet<>();
         mThumbUtils = new ThumbUtils(this);
         mAsyncTaskLists = new ArrayList<>();
         mAllMediaFolderFileMap = new HashMap<>();
+
 
         //get intent extra
         Intent intent = getIntent();
@@ -118,6 +125,29 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
 
         initRecyclerLists();
         checkPermissions();
+
+        if(intent.hasExtra(GalleryConsts.INTENT_PREVIOUSLY_SELECT_ITEMS)) {
+            //Get previously selected images
+            mPreviouslySelectedImagesList = intent.getParcelableArrayListExtra(GalleryConsts.INTENT_PREVIOUSLY_SELECT_ITEMS);
+            if(mPreviouslySelectedImagesList != null) {
+                for(Image image : mPreviouslySelectedImagesList) {
+                    mPreviouslySelectedImagesSet.add(image.getImageUri());
+                }
+                String itemSelectedFolder = intent.getStringExtra(GalleryConsts.INTENT_PREVIOUSLY_SELECT_ITEMS_FOLDER);
+
+                if(!itemSelectedFolder.equals("") && mPreviouslySelectedImagesList.size() > 0) {
+                    isPreviousSelectedListExists = true;
+                    if(!itemSelectedFolder.equals(getString(R.string.all_media_files))) {
+                        Log.d(TAG, "onCreate: intent not all media");
+                        mImageGridAdapter.setPreviousSelectedList(mPreviouslySelectedImagesList);
+                        mPreviouslySelectedImagesList.clear();
+                    }
+                    onDirClick(itemSelectedFolder);
+                }
+            }
+        }
+
+
 
     }
 
@@ -139,6 +169,7 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
     }
 
     private void toggleMediaFolders() {
+        Log.d(TAG, "toggleMediaFolders: ");
         switch (mRequiredMediaType) {
             case GalleryConsts.IMAGE_TYPE:
                 getAllMediaFolderFromDb(GalleryConsts.IMAGE_TYPE);
@@ -155,12 +186,13 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
     }
 
     private void getMediaFiles(String folderName) {
+        Log.d(TAG, "getMediaFiles: ");
         //get intent extra
         Intent intent = getIntent();
         if (intent.hasExtra(GalleryConsts.INTENT_MEDIA_TYPE)) {
             mRequiredMediaType = intent.getStringExtra(GalleryConsts.INTENT_MEDIA_TYPE);
         }
-        Log.d(TAG, "getMediaFiles: " + mRequiredMediaType);
+//        Log.d(TAG, "getMediaFiles: " + mRequiredMediaType);
         switch (mRequiredMediaType) {
             case GalleryConsts.IMAGE_TYPE:
                 getOnlyImageFiles(folderName);
@@ -206,6 +238,7 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
 
 
     private void getAllMediaFolderFromDb(String mediaType) {
+        Log.d(TAG, "getAllMediaFolderFromDb: ");
         Uri mediaUri = null;
         if (mediaType.equals(GalleryConsts.IMAGE_TYPE)) {
             mediaUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
@@ -234,8 +267,9 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
 
     //Cursor will determine which media directories we are getting
     private void getDirectoriesWithMedia(Cursor cursor, String mediaType) {
-        Log.d(TAG, "getDirectoriesWithMedia: ");
-        isFolderList = true;
+//        mLastSubDirSet.clear();
+//        Log.d(TAG, "getDirectoriesWithMedia: ");
+//        isFolderList = true;
 
         //Total number of images/videos
         int count = cursor.getCount();
@@ -259,7 +293,8 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
                     if (new File(filePath).length() == 0) {
                         mLastSubDirSet.remove(subDirName);
                     } else {
-                        LoadThumbAsyncTask asyncTask = new LoadThumbAsyncTask(mediaType);
+//                        Log.d(TAG, "getDirectoriesWithMedia: executing Async");
+                        LoadThumbAsyncTask asyncTask = new LoadThumbAsyncTask(mediaType, true);
                         mAsyncTaskLists.add(asyncTask);
                         asyncTask.execute(filePath, String.valueOf(imageId));
                     }
@@ -283,9 +318,6 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
 
        mAllMediaFolderFileMap = galleryLoader.getAllTimeFilesMap();
        ArrayList<Image> allImageAndHeaderFiles = orderMapItemsAsList(mAllMediaFolderFileMap);
-       for(Image image : allImageAndHeaderFiles) {
-           Log.d(TAG, "getAllMediaFolderFiles: " + image);
-       }
 
        final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 3);
        mMediaFolderFileListAdapter = new MediaFolderFileListAdapter(this, allImageAndHeaderFiles);
@@ -297,12 +329,18 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
                return mMediaFolderFileListAdapter.isHeader(position) ? gridLayoutManager.getSpanCount() : 1;
            }
        });
+
+       //Saving previously selected items
+        if(mPreviouslySelectedImagesList != null && mPreviouslySelectedImagesList.size() > 0) {
+            mMediaFolderFileListAdapter.setPreviousSelectedList(mPreviouslySelectedImagesList);
+            mPreviouslySelectedImagesList.clear();
+        }
     }
 
 
     //Called when Folder is clicked
     public Cursor getFolderCursor(String folderName, String mediaType) {
-        Log.d(TAG, "getFolderCursor: " + folderName);
+//        Log.d(TAG, "getFolderCursor: " + folderName);
         final String[] columns = {MediaStore.Images.Media.DATA,
                 MediaStore.Images.Media._ID};
 
@@ -342,8 +380,8 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
                 int imageIdColumnIndex = folderCursor.getColumnIndex(MediaStore.Images.Media._ID);
                 long imageId = folderCursor.getLong(imageIdColumnIndex);
 
-                Log.d(TAG, "getAllFilesInFolder: " + filePath + imageId);
-                LoadThumbAsyncTask asyncTask = new LoadThumbAsyncTask(mediaType);
+//                Log.d(TAG, "getAllFilesInFolder: " + filePath + imageId);
+                LoadThumbAsyncTask asyncTask = new LoadThumbAsyncTask(mediaType, false);
                 mAsyncTaskLists.add(asyncTask);
                 asyncTask.execute(filePath, String.valueOf(imageId));
             }
@@ -354,9 +392,11 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
 
     class LoadThumbAsyncTask extends AsyncTask<String, Void, Image> {
         String mediaType;
+        boolean isFolderList;
 
-        public LoadThumbAsyncTask(String mediaType) {
+        public LoadThumbAsyncTask(String mediaType, boolean isFolderList) {
             this.mediaType = mediaType;
+            this.isFolderList = isFolderList;
         }
 
         @Override
@@ -391,17 +431,21 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
         protected void onPostExecute(Image image) {
             super.onPostExecute(image);
             if (image != null) {
-                saveImage(image);
+                saveImage(image, isFolderList);
             }
         }
     }
 
 
     //Save files related info in lists
-    private void saveImage(Image image) {
-        Log.d(TAG, "saveImage: " + image);
+    private void saveImage(Image image, boolean isFolderList) {
+//        Log.d(TAG, "saveImage: " + image);
         if (image != null) {
             if (!isFolderList) {
+                if(mPreviouslySelectedImagesSet.contains(image.getImageUri())) {
+                    image.setSelected(true);
+                    mPreviouslySelectedImagesSet.remove(image.getImageUri());
+                }
                 int size = mGridImagesList.size();
                 if (size > 0) {
                     mGridImagesList.add(size, image);
@@ -417,7 +461,8 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
                 } else {
                     mDirecList.add(image);
                 }
-                mDirListAdapter.notifyItemInserted(size);
+//                Log.d(TAG, "saveImage: " + image);
+                mDirListAdapter.notifyItemInserted(size + 1);
             }
         }
     }
@@ -480,8 +525,16 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
         mImageGridAdapter.clearSelectedList();
         mImageGridAdapter.notifyDataSetChanged();
 
-        mMediaFolderFileListAdapter.clearSelectedList();
-        mMediaFolderFileListAdapter.notifyDataSetChanged();
+        if(mMediaFolderFileListAdapter != null) {
+            mMediaFolderFileListAdapter.clearSelectedList();
+            mMediaFolderFileListAdapter.notifyDataSetChanged();
+        }
+
+        if(mPreviouslySelectedImagesSet != null) {
+            mPreviouslySelectedImagesSet.clear();
+        }
+
+        GalleryLoader.getInstance().clearPreviouslySelectedList();
     }
 
     //Send result back to calling activity
@@ -489,7 +542,9 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
         ArrayList<Image> selectedImageList = new ArrayList<>(selectedImages);
         Intent resultIntent = new Intent();
         resultIntent.putParcelableArrayListExtra(GalleryConsts.INTENT_SELECT_GALLERY_ITEMS, selectedImageList);
+        resultIntent.putExtra(GalleryConsts.INTENT_PREVIOUSLY_SELECT_ITEMS_FOLDER, mCurrentDirName);
         setResult(RESULT_OK, resultIntent);
+
         finish();
     }
 
@@ -546,6 +601,11 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
     public void onBackPressed() {
         if (mDirNameRecyclerView.getVisibility() != View.VISIBLE) {
             mDirNameRecyclerView.setVisibility(View.VISIBLE);
+            if(isPreviousSelectedListExists) {
+                mDirecList.clear();
+                mLastSubDirSet.clear();
+                toggleMediaFolders();
+            }
             if(mImageGridRecyclerView.getVisibility() == View.VISIBLE) {
                 mImageGridRecyclerView.setVisibility(View.GONE);
             } else if(mAllMediaFilesGridRecyclerView.getVisibility() == View.VISIBLE) {
@@ -561,12 +621,70 @@ public class GalleryActivity extends AppCompatActivity implements DirListAdapter
     private ArrayList<Image> orderMapItemsAsList(HashMap<String, ArrayList<Image>> map) {
         Set<String> dirNames = map.keySet();
         ArrayList<Image> allMediaAndHeaderFiles = new ArrayList<>();
-        for(String title : dirNames) {
+
+        //In order to get the items in order have to do this multiple calls
+        //Add title item first, followed by image item list
+        if(dirNames.contains(getString(R.string.today))) {
+            String title = getString(R.string.today);
             allMediaAndHeaderFiles.add(new Image(title));
-            allMediaAndHeaderFiles.addAll(map.get(title));
+            allMediaAndHeaderFiles.addAll(getImageListWithMapKey(title, map));
         }
+
+        if(dirNames.contains(getString(R.string.yesterday))) {
+            String title = getString(R.string.yesterday);
+            allMediaAndHeaderFiles.add(new Image(title));
+            allMediaAndHeaderFiles.addAll(getImageListWithMapKey(title, map));
+        }
+
+        if(dirNames.contains(getString(R.string.last_week))) {
+            String title = getString(R.string.last_week);
+            allMediaAndHeaderFiles.add(new Image(title));
+            allMediaAndHeaderFiles.addAll(getImageListWithMapKey(title, map));
+        }
+
+        if(dirNames.contains(getString(R.string.older_than_week))) {
+            String title = getString(R.string.older_than_week);
+            allMediaAndHeaderFiles.add(new Image(title));
+            allMediaAndHeaderFiles.addAll(getImageListWithMapKey(title, map));
+        }
+
         return allMediaAndHeaderFiles;
+
+
+
+
+
+//        for(String title : dirNames) {
+//            allMediaAndHeaderFiles.add(new Image(title));
+//            //mark previously selected images
+//            ArrayList<Image> imageList = map.get(title);
+//            for(Image image : imageList) {
+//                if (mPreviouslySelectedImagesSet.contains(image.getImageUri())) {
+//                    image.setSelected(true);
+//                    mPreviouslySelectedImagesSet.remove(image.getImageUri());
+//                }
+//            }
+//            allMediaAndHeaderFiles.addAll(imageList);
+//        }
+//        return allMediaAndHeaderFiles;
     }
+
+
+    private ArrayList<Image> getImageListWithMapKey(String title, HashMap<String, ArrayList<Image>> map) {
+        //mark previously selected images
+        ArrayList<Image> imageList = map.get(title);
+        for(Image image : imageList) {
+            if (mPreviouslySelectedImagesSet.contains(image.getImageUri())) {
+                image.setSelected(true);
+                mPreviouslySelectedImagesSet.remove(image.getImageUri());
+            }
+        }
+        return imageList;
+    }
+
+
+
+
 
 //    private void displayMapItems(HashMap<String, ArrayList<Image>> map) {
 //        Set<String> dirNames = map.keySet();
